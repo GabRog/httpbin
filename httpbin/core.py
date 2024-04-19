@@ -28,6 +28,7 @@ from flask import (
 )
 from six.moves import range as xrange
 from werkzeug.datastructures import WWWAuthenticate, MultiDict
+from werkzeug.debug import console
 from werkzeug.http import http_date
 from werkzeug.wrappers import BaseResponse
 from werkzeug.http import parse_authorization_header
@@ -215,6 +216,14 @@ def before_request():
 
 @app.after_request
 def set_cors_headers(response):
+    args_dict = request.args.items()
+    args = CaseInsensitiveDict(args_dict)
+
+    if "forward_headers" in args:
+        forward_headers = bool(str(args["forward_headers"]).title())
+        if forward_headers:
+            response.headers.update(request.headers)
+
     response.headers["Access-Control-Allow-Origin"] = request.headers.get("Origin", "*")
     response.headers["Access-Control-Allow-Credentials"] = "true"
 
@@ -230,7 +239,6 @@ def set_cors_headers(response):
                 "Access-Control-Request-Headers"
             ]
     return response
-
 
 # ------
 # Routes
